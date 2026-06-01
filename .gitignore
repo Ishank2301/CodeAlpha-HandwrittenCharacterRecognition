@@ -1,0 +1,95 @@
+# Python
+
+**pycache**/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+
+venv/
+env/
+ENV/
+.venv/
+
+# Jupyter
+
+.ipynb_checkpoints/
+
+# VS Code
+
+.vscode/
+
+# PyCharm
+
+.idea/
+
+# Streamlit
+
+.streamlit/secrets.toml
+
+# Models
+
+*.h5
+*.keras
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.joblib
+*.pkl
+
+# Training Logs
+
+logs/
+runs/
+wandb/
+
+# Dataset Files
+
+data/raw/
+data/processed/
+
+# Kaggle
+
+kaggle.json
+
+# Environment Variables
+
+.env
+.env.*
+
+# OS Files
+
+.DS_Store
+Thumbs.db
+
+# Build
+
+build/
+dist/
+*.egg-info/
+
+# Cache
+
+.cache/
+.pytest_cache/
+.mypy_cache/
+
+# TensorFlow
+
+checkpoint
+events.out.tfevents.*
+
+# Temporary Files
+
+*.tmp
+*.temp
+
+# Coverage
+
+.coverage
+htmlcov/
+
+# Streamlit Cache
+
+.streamlit/cache/
