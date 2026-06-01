@@ -120,7 +120,7 @@ Handwritten-Character-Recognition/
 │   └── Training.ipynb
 │
 ├── models/
-│   └── cnn_model.h5
+│   └── handwritten_characters_cnn.keras
 │
 ├── src/
 │   ├── preprocess.py
@@ -128,7 +128,7 @@ Handwritten-Character-Recognition/
 │   ├── predict.py
 │   └── utils.py
 │
-├── streamlit_app.py
+├── app.py
 │
 ├── images/
 │   ├── demo.png
@@ -185,6 +185,26 @@ pip install -r requirements.txt
 python src/train.py
 ```
 
+For local training in VS Code on Windows:
+
+```bash
+python -m venv myenv
+myenv\Scripts\activate
+pip install -r requirements.txt
+python src/train.py
+```
+
+The first run downloads and prepares MNIST digits and `emnist/letters`
+automatically inside `data/raw/`. You do not need to download either dataset
+manually. The best model is saved as `models/handwritten_characters_cnn.keras`.
+
+To test one image or launch the local web app:
+
+```bash
+python src/predict.py path\to\character.png
+streamlit run app.py
+```
+
 or train directly using:
 
 * Google Colab
@@ -194,7 +214,7 @@ or train directly using:
 The trained model will be saved inside:
 
 ```text
-models/cnn_model.h5
+models/handwritten_characters_cnn.keras
 ```
 
 ---
@@ -202,7 +222,7 @@ models/cnn_model.h5
 ## 🖥️ Running Streamlit App
 
 ```bash
-streamlit run streamlit_app.py
+streamlit run app.py
 ```
 
 Features:
