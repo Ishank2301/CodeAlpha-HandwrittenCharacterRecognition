@@ -1,46 +1,77 @@
-from __future__ import annotations
-
-import argparse
 from pathlib import Path
 
 import numpy as np
-from tensorflow import keras
+from tensorflow.keras.models import load_model
 
-try:
-    from .preprocess import preprocess_uploaded_image
-except ImportError:
-    from preprocess import preprocess_uploaded_image
+from preprocess import preprocess_image
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MODEL_PATH = PROJECT_ROOT / "models" / "handwritten_characters_cnn.keras"
-CHARACTERS = tuple("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+BASE_DIR = Path(__file__).resolve().parent.parent
 
+MNIST_MODEL_PATH = BASE_DIR / "models" / "mnist_cnn.keras"
+EMNIST_MODEL_PATH = BASE_DIR / "models" / "emnist_cnn.keras"
 
-def predict_character(
-    image_path: str | Path, model_path: str | Path = DEFAULT_MODEL_PATH
-) -> tuple[str, float]:
-    model_path = Path(model_path)
-    if not model_path.exists():
-        raise FileNotFoundError(
-            f"Model not found at {model_path}. Run: python src/train.py"
-        )
+EMNIST_LABELS = [chr(i) for i in range(65, 91)]
 
-    model = keras.models.load_model(model_path)
-    probabilities = model.predict(preprocess_uploaded_image(image_path), verbose=0)[0]
-    predicted_index = int(np.argmax(probabilities))
-    return CHARACTERS[predicted_index], float(probabilities[predicted_index])
+_model_cache = {}
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("image", type=Path)
-    parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
-    args = parser.parse_args()
+from pathlib import Path
 
-    character, confidence = predict_character(args.image, args.model_path)
-    print(f"Prediction: {character}")
-    print(f"Confidence: {confidence:.2%}")
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+print("BASE_DIR =", BASE_DIR)
+
+print("Models folder exists:", (BASE_DIR / "models").exists())
+
+print("EMNIST path:", BASE_DIR / "models" / "emnist_cnn.keras")
+
+print("EMNIST exists:", (BASE_DIR / "models" / "emnist_cnn.keras").exists())
 
 
-if __name__ == "__main__":
-    main()
+def get_model(model_path):
+    model_path = str(model_path)
+
+    if model_path not in _model_cache:
+        _model_cache[model_path] = load_model(model_path)
+
+    return _model_cache[model_path]
+
+
+def predict(uploaded_file, model_type):
+
+    image = preprocess_image(uploaded_file, model_type)
+
+    if model_type == "MNIST":
+
+        if not MNIST_MODEL_PATH.exists():
+            raise FileNotFoundError(f"Model not found: {MNIST_MODEL_PATH}")
+
+        model = get_model(MNIST_MODEL_PATH)
+
+        predictions = model.predict(image, verbose=0)
+
+        predicted_class = int(np.argmax(predictions))
+
+        confidence = float(np.max(predictions))
+
+        return str(predicted_class), confidence
+
+    elif model_type == "EMNIST":
+
+        if not EMNIST_MODEL_PATH.exists():
+            raise FileNotFoundError(f"Model not found: {EMNIST_MODEL_PATH}")
+
+        model = get_model(EMNIST_MODEL_PATH)
+
+        predictions = model.predict(image, verbose=0)
+
+        predicted_index = int(np.argmax(predictions))
+
+        confidence = float(np.max(predictions))
+
+        predicted_character = EMNIST_LABELS[predicted_index]
+
+        return predicted_character, confidence
+
+    else:
+        raise ValueError(f"Unsupported model type: {model_type}")
