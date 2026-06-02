@@ -1,23 +1,58 @@
-from pathlib import Path
-
 import streamlit as st
 
-from src.predict import DEFAULT_MODEL_PATH, predict_character
+from src.predict import predict
 
-st.set_page_config(page_title="Handwritten Character Recognition")
+st.set_page_config(
+    page_title="Handwritten Character Recognition",
+    page_icon="✍️",
+    layout="centered",
+)
+
 st.title("Handwritten Character Recognition")
-st.write("Upload one handwritten digit or A-Z letter.")
 
-if not Path(DEFAULT_MODEL_PATH).exists():
-    st.warning("Train the model first with: python src/train.py")
+st.markdown("""
+    Upload a handwritten digit or alphabet image and select
+    the model you want to use for prediction.
+    """)
 
-uploaded_file = st.file_uploader("Choose an image", type=["png", "jpg", "jpeg"])
+with st.sidebar:
 
-if uploaded_file is not None:
-    st.image(uploaded_file, caption="Uploaded image", width=200)
+    st.header("Model Selection")
+
+    model_type = st.radio("Choose Model", ["MNIST", "EMNIST"])
+
+    st.divider()
+
+    st.markdown(f"""
+        **Selected Model**
+
+        {model_type}
+        """)
+
+uploaded_file = st.file_uploader("Upload Image", type=["png", "jpg", "jpeg"])
+
+if uploaded_file:
+
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+
+        st.image(uploaded_file, caption="Uploaded Image", use_container_width=True)
+
     try:
-        character, confidence = predict_character(uploaded_file)
-        st.success(f"Prediction: {character}")
-        st.write(f"Confidence: {confidence:.2%}")
-    except FileNotFoundError as error:
-        st.error(str(error))
+
+        with st.spinner("Generating prediction..."):
+
+            prediction, confidence = predict(uploaded_file, model_type)
+
+        with col2:
+
+            st.subheader("Prediction")
+
+            st.metric(label="Character", value=prediction)
+
+            st.metric(label="Confidence", value=f"{confidence:.2%}")
+
+    except Exception as error:
+
+        st.error(f"{error}")
